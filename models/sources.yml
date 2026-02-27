@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: ecom_raw
+    database: ecom-demo-488710
+    schema: ecom_raw
+    tables:
+      - name: orders
+        description: "Raw Shopify orders from Airbyte"
+      - name: customers
+        description: "Raw Shopify customers from Airbyte"
+      - name: products
+        description: "Raw Shopify products from Airbyte"
+      - name: order_refunds
+        description: "Raw Shopify refunds from Airbyte"
+      - name: product_variants
+        description: "Raw Shopify product variants from Airbyte"
+```
+
+I used `ecom-demo-488710` as the database — I got that from your service account email `airbyte-loader@ecom-demo-488710.iam.gserviceaccount.com`. That's your GCP project ID.
+
+**Save it.**
+
+Then in the command bar at the bottom type:
+```
+dbt compile
