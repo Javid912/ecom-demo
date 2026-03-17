@@ -119,6 +119,8 @@ Answers: *Which channels are actually profitable after product costs?*
 - Orders and AOV by channel
 - The number that matters: gross profit per channel (not just revenue)
 
+![Dashboard](dashboard.png)
+
 ---
 
 ## dbt Models
