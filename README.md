@@ -155,29 +155,12 @@ The final output is a business-facing dashboard tracking:
 | `mart_customer_ltv` | Customer segments | total_revenue, ltv_tier, is_repeat_buyer, top_vendor |
 
 ---
+## ⚙️ Key Decisions
 
-## Key Technical Decisions
+- Used dbt for structured data modeling (staging → marts)
+- Chose BigQuery for scalability and native integration with Looker
+- Used Airbyte Cloud for simple, no-maintenance ingestion
 
-**Why Airbyte Cloud over Airbyte OSS?**  
-Zero server maintenance. Same connectors. Free tier covers SME data volumes.
-OSS only makes sense if a client has strict data residency requirements.
-
-**Why dbt Cloud over dbt Core?**  
-Scheduling, logging, and docs hosting without managing infrastructure.
-The free Developer tier covers solo operator needs.
-
-**Why Looker Studio over Metabase?**  
-Free, native BigQuery integration, clients already have Google accounts.
-Metabase is better for more complex embedding needs — consider it for larger clients.
-
-**Why no Airflow?**  
-dbt Cloud's built-in scheduler handles everything needed here.
-Airflow adds operational complexity with no benefit at this scale.
-
-**Dev vs Production datasets:**
-- `ecom_dev_marts` — written when running models manually in dbt Cloud IDE
-- `ecom_marts` — written by the scheduled production job
-- Looker Studio always points to `ecom_marts`
 
 ---
 
