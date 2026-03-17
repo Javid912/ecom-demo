@@ -1,11 +1,17 @@
-# ecom-demo — Shopify Analytics Stack
+# 📊 Ecommerce Analytics Pipeline (Shopify → BigQuery → dbt → Looker)
 
-A productized data pipeline for e-commerce SMEs.  
-Connects Shopify to BigQuery via Airbyte, transforms with dbt, visualizes in Looker Studio.
+End-to-end analytics system that transforms raw Shopify data into business-ready insights on revenue, customer LTV, and marketing performance.
 
-Built as a repeatable template for client projects targeting German e-commerce businesses (€1–5M revenue).
+Built using a modern data stack with automated daily pipelines and dashboard reporting.
 
 ---
+
+## ⚡ Key Highlights
+
+- End-to-end pipeline: Shopify → Airbyte → BigQuery → dbt → Looker
+- Built analytics-ready data models (revenue, LTV, marketing performance)
+- Automated daily data pipeline (no manual reporting)
+- Designed for real-world ecommerce use cases
 
 ## What This Does
 
@@ -119,6 +125,15 @@ Answers: *Which channels are actually profitable after product costs?*
 - Orders and AOV by channel
 - The number that matters: gross profit per channel (not just revenue)
 
+## 📊 Dashboard
+
+The final output is a business-facing dashboard tracking:
+
+- Revenue and gross profit trends  
+- Customer lifetime value (LTV)  
+- Repeat purchase behavior  
+- Marketing performance by channel  
+
 ![Dashboard](dashboard.png)
 
 ---
@@ -178,34 +193,6 @@ Quick summary:
 5. Run `dbt run` — all 6 models should go green
 6. Create production job in dbt Cloud
 7. Connect Looker Studio to `ecom_marts`
-
----
-
-## Known Limitations (v1)
-
-| Limitation | Notes |
-|---|---|
-| No real COGS data | `product_margins.csv` seed is manual — connect Lexoffice in v2 |
-| No Google Ads spend | Channel attribution uses Shopify `source_name` field only |
-| Single currency | EUR only — add FX table for multi-currency stores |
-| No inventory tracking | `inventory_items` synced but not modeled yet |
-
----
-
-## Productized Offer (context)
-
-This stack is the technical foundation for a productized service targeting German e-commerce SMEs:
-
-**E-Commerce Data Foundation — 30 Day Implementation**
-- Shopify + Google Ads integration
-- Central BigQuery warehouse
-- 3 KPI dashboards
-- Automated daily refresh
-- Documentation
-
-**Price:** €5,000–8,000 setup + €1,200–1,800/mo retainer
-
-**Target client:** Shopify stores doing €1–5M/year, 10–40 employees, still reporting in Excel.
 
 ---
 
