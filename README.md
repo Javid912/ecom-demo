@@ -11,7 +11,7 @@ Part of an analytics agency targeting €100K+ net revenue.
 
 | Link | Where |
 |---|---|
-| **Cockpit** (project hub) | [`website/cockpit.html`](website/cockpit.html) |
+| **Cockpit** (project hub) | [`website/cockpit.html`](website/cockpit.html) — also on [GitHub Pages](https://Javid912.github.io/ecom-demo/cockpit.html) |
 | Pipeline architecture | [`docs/product/01-architecture.md`](docs/product/01-architecture.md) |
 | Build checklist | [`docs/product/02-build-checklist.md`](docs/product/02-build-checklist.md) |
 | Business plan | [`docs/business/01-business-plan.md`](docs/business/01-business-plan.md) |
