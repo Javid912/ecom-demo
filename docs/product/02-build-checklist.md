@@ -51,17 +51,17 @@ These are YOUR accounts — reused across all clients.
 **Time: ~1 hour**
 
 - [ ] Create new GCP project — name: `[client]-analytics`
-- [ ] Enable BigQuery API
+- [ ] Enable BigQuery API, BigQuery Storage API
 - [ ] Create datasets — **CRITICAL: set region to `EU` for all German clients**
   - [ ] `ecom_raw` — where Airbyte loads raw data
   - [ ] `ecom_marts` — where dbt writes production tables
 - [ ] Create Service Account #1 for Airbyte:
   - Name: `airbyte-loader`
-  - Roles: `BigQuery Data Editor` + `BigQuery Job User`
+  - Roles: `BigQuery Data Editor` + `BigQuery Job User` 
   - Download JSON → save securely (NOT in repo)
 - [ ] Create Service Account #2 for dbt:
   - Name: `dbt-transformer`
-  - Roles: `BigQuery Data Editor` + `BigQuery Job User`
+  - Roles: `BigQuery Data Editor` + `BigQuery Job User` + `BigQuery Read Session User`
   - Download JSON → save securely
 
 **⚠️ Gotcha:** Always create datasets in EU region upfront.  

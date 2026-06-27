@@ -1,42 +1,23 @@
-# 📊 Ecommerce Analytics Pipeline (Shopify → BigQuery → dbt → Looker)
+# Ecom-Demo — Shopify Analytics Pipeline
 
-End-to-end analytics system that transforms raw Shopify data into business-ready insights on revenue, customer LTV, and marketing performance.
+End-to-end analytics system: **Shopify → Airbyte → BigQuery → dbt → Looker Studio**.
 
-Built using a modern data stack with automated daily pipelines and dashboard reporting.
-
----
-
-## ⚡ Key Highlights
-
-- End-to-end pipeline: Shopify → Airbyte → BigQuery → dbt → Looker
-- Built analytics-ready data models (revenue, LTV, marketing performance)
-- Automated daily data pipeline (no manual reporting)
-- Designed for real-world ecommerce use cases
-
-## What This Does
-
-Takes a Shopify store from this:
-
-> "We have Shopify reports and Google Ads reports but they don't match and we don't know which campaigns are actually profitable."
-
-To this:
-
-> A live dashboard showing revenue, gross margin, marketing performance by channel, and customer LTV — updated automatically every morning.
+Built as a productized service for €1M–€10M revenue Shopify stores.
+Part of an analytics agency targeting €100K+ net revenue.
 
 ---
 
-## Stack
+## Quick Links
 
-| Layer | Tool | Cost |
-|---|---|---|
-| Source | Shopify API | free (included in store) |
-| Ingestion | Airbyte Cloud | free tier |
-| Warehouse | BigQuery (GCP) | free tier |
-| Transformation | dbt Cloud | free Developer tier |
-| Visualization | Looker Studio | free |
-| **Total** | | **~€0/mo for demo** |
-
-For real client projects: ~€150–250/mo depending on data volume.
+| Link | Where |
+|---|---|
+| **Cockpit** (project hub) | [`website/cockpit.html`](website/cockpit.html) |
+| Pipeline architecture | [`docs/product/01-architecture.md`](docs/product/01-architecture.md) |
+| Build checklist | [`docs/product/02-build-checklist.md`](docs/product/02-build-checklist.md) |
+| Business plan | [`docs/business/01-business-plan.md`](docs/business/01-business-plan.md) |
+| Service packages | [`docs/business/02-services-packages.md`](docs/business/02-services-packages.md) |
+| Pricing model | [`docs/business/03-pricing.md`](docs/business/03-pricing.md) |
+| Marketing strategy | [`docs/business/04-marketing-strategy.md`](docs/business/04-marketing-strategy.md) |
 
 ---
 
@@ -44,138 +25,74 @@ For real client projects: ~€150–250/mo depending on data volume.
 
 ```
 ecom-demo/
-├── README.md                        ← you are here
-├── CHECKLIST_v1.md                  ← step-by-step build guide with gotchas
-├── dbt/
-│   ├── dbt_project.yml              ← dbt project config
-│   ├── models/
-│   │   ├── sources.yml              ← declares raw BigQuery tables
-│   │   ├── staging/
-│   │   │   ├── stg_orders.sql       ← cleans raw Shopify orders
-│   │   │   ├── stg_order_lines.sql  ← unnests line items from JSON
-│   │   │   └── stg_customers.sql    ← cleans customer data
-│   │   └── marts/
-│   │       ├── mart_revenue_monthly.sql        ← monthly revenue & AOV
-│   │       ├── mart_marketing_performance.sql  ← channel attribution & ROAS
-│   │       └── mart_customer_ltv.sql           ← customer LTV & segments
-│   └── seeds/
-│       └── product_margins.csv      ← COGS data (manual or from Lexoffice)
-└── docs/
-    └── architecture.md              ← pipeline diagram and decisions
+├── models/                     ← dbt models (staging → marts)
+│   ├── sources.yml             source definitions + tests
+│   ├── staging/                staging views (cleaned raw data)
+│   └── marts/                  mart tables (business KPIs)
+├── seeds/                      dbt seed data (product_margins.csv)
+├── tests/                      dbt tests
+├── macros/                     dbt macros
+├── snapshots/                  dbt snapshots (SCD tracking)
+├── docs/
+│   ├── business/               business plan, services, pricing, marketing
+│   ├── product/                architecture, checklist, changelog
+│   └── decisions/              architecture decision records
+├── website/                    landing page + internal cockpit
+│   ├── cockpit.html            project dashboard (open this first)
+│   └── assets/                 CSS, JS, images
+├── dbt_project.yml             dbt project configuration
+└── README.md
 ```
 
 ---
 
-## Pipeline Architecture
+## Pipeline
 
 ```
-Shopify Dev Store / Client Store
-          │
-          │  Admin API (orders, customers, products)
-          ▼
-  Airbyte Cloud (free tier)
-          │
-          │  daily sync
-          ▼
-  BigQuery — ecom_raw
-  ├── orders          (line_items nested as JSON array)
-  ├── customers
-  ├── products
-  └── order_refunds
-          │
-          │  dbt Cloud — daily job 06:00 UTC
-          ▼
-  BigQuery — ecom_marts
-  ├── stg_orders           (view — cleaned orders)
-  ├── stg_order_lines      (view — unnested line items)
-  ├── stg_customers        (view — cleaned customers)
-  ├── mart_revenue_monthly         (table — revenue KPIs)
-  ├── mart_marketing_performance   (table — channel attribution)
-  └── mart_customer_ltv            (table — customer segments)
-          │
-          │  direct BigQuery connection
-          ▼
-  Looker Studio
-  ├── Page 1: Revenue & Margin
-  ├── Page 2: Customer LTV & Cohorts
-  └── Page 3: Marketing Performance
+Shopify → Airbyte Cloud → BigQuery (ecom_raw) → dbt Cloud → BigQuery (ecom_marts) → Looker Studio
 ```
 
----
+| Layer | Tool | Cost |
+|---|---|---|
+| Source | Shopify API | Free |
+| Ingestion | Airbyte Cloud | Free tier |
+| Warehouse | BigQuery | Free tier |
+| Transform | dbt Cloud | Free Developer |
+| Visualize | Looker Studio | Free |
 
-## The Three Dashboards
-
-### 1. Revenue & Margin
-Answers: *Are we growing? What is our real margin?*
-- Monthly revenue and gross profit trend
-- Average order value over time
-- Total orders and unique customers
-
-### 2. Customer LTV & Cohorts
-Answers: *Who are our best customers? Are they coming back?*
-- LTV segmentation: High / Mid / Low value customers
-- Repeat purchase rate
-- Top customers by revenue
-- Acquisition channel vs LTV
-
-### 3. Marketing Performance
-Answers: *Which channels are actually profitable after product costs?*
-- Revenue by channel
-- Revenue share per channel
-- Orders and AOV by channel
-- The number that matters: gross profit per channel (not just revenue)
-
-## 📊 Dashboard
-
-The final output is a business-facing dashboard tracking:
-
-- Revenue and gross profit trends  
-- Customer lifetime value (LTV)  
-- Repeat purchase behavior  
-- Marketing performance by channel  
-
-![Dashboard](dashboard.png)
+**GCP Project:** `ecom-demo-488710` · Region: EU
 
 ---
 
 ## dbt Models
 
-### Staging Layer (views)
-| Model | Source | Purpose |
+| Model | Type | Purpose |
 |---|---|---|
-| `stg_orders` | `ecom_raw.orders` | Cleans orders, extracts customer JSON, adds `is_completed` flag |
-| `stg_order_lines` | `ecom_raw.orders` | Unnests `line_items` JSON array → one row per product |
-| `stg_customers` | `ecom_raw.customers` | Cleans customers, parses tags (VIP, referral), extracts address JSON |
-
-### Marts Layer (tables)
-| Model | Purpose | Key Metrics |
-|---|---|---|
-| `mart_revenue_monthly` | Monthly revenue rollup | gross_revenue, net_revenue, avg_order_value, unique_customers |
-| `mart_marketing_performance` | Channel attribution | orders by channel, revenue by channel, revenue_share_pct |
-| `mart_customer_ltv` | Customer segments | total_revenue, ltv_tier, is_repeat_buyer, top_vendor |
-
----
-## ⚙️ Key Decisions
-
-- Used dbt for structured data modeling (staging → marts)
-- Chose BigQuery for scalability and native integration with Looker
-- Used Airbyte Cloud for simple, no-maintenance ingestion
-
+| `stg_orders` | view | Clean orders, extract customer JSON |
+| `stg_order_lines` | view | Unnest line items from JSON array |
+| `stg_customers` | view | Clean customers, parse tags |
+| `mart_revenue_monthly` | table | Monthly revenue, AOV, volume |
+| `mart_marketing_performance` | table | Channel attribution, ROAS |
+| `mart_customer_ltv` | table | LTV segments, repeat buyer flags |
 
 ---
 
-## Setup
+## Business Model
 
-See **`CHECKLIST_v1.md`** for the full step-by-step guide including all gotchas discovered during the first build.
+Productized analytics service for mid-market Shopify stores.
 
-Quick summary:
-1. Create GCP project + BigQuery datasets (region: EU)
-2. Create Shopify custom app → get Admin API token
-3. Configure Airbyte Cloud: Shopify → BigQuery
-4. Configure dbt Cloud: connect GitHub + BigQuery, set region to EU
-5. Run `dbt run` — all 6 models should go green
-6. Create production job in dbt Cloud
-7. Connect Looker Studio to `ecom_marts`
+| Tier | Setup | Monthly | Target |
+|---|---|---|---|
+| Starter | €3K | €500/mo | €1M–€3M stores |
+| Growth | €5K | €1K/mo | €3M–€5M stores |
+| Enterprise | €8K | €2K/mo | €5M–€10M stores |
+
+---
+
+## Branches
+
+- `main` — stable, production-ready
+- `develop` — active development (you are here)
 
 ---
 
@@ -183,7 +100,8 @@ Quick summary:
 
 | Version | Date | Notes |
 |---|---|---|
-| v1.0 | March 2026 | First complete build — demo stack with Egnition sample data |
+| v1.0 | March 2026 | Initial build — Egnition sample data |
+| v1.1 | June 2026 | Repo restructured, business docs, cockpit, develop branch |
 
 ---
 

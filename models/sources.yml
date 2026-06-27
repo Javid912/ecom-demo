@@ -6,7 +6,52 @@ sources:
     schema: ecom_raw
     tables:
       - name: orders
+        description: Raw Shopify orders with nested line_items JSON
+        columns:
+          - name: id
+            description: Order ID
+            tests:
+              - unique
+              - not_null
+          - name: created_at
+            tests:
+              - not_null
+
       - name: customers
+        description: Raw Shopify customers
+        columns:
+          - name: id
+            description: Customer ID
+            tests:
+              - unique
+              - not_null
+          - name: email
+            tests:
+              - unique
+
       - name: products
+        description: Raw Shopify products
+        columns:
+          - name: id
+            description: Product ID
+            tests:
+              - unique
+              - not_null
+
       - name: order_refunds
+        description: Raw Shopify order refunds
+        columns:
+          - name: id
+            description: Refund ID
+            tests:
+              - unique
+              - not_null
+
       - name: product_variants
+        description: Raw Shopify product variants
+        columns:
+          - name: id
+            description: Variant ID
+            tests:
+              - unique
+              - not_null

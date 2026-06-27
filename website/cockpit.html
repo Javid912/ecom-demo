@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cockpit — Ecom-Demo</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --orange: #d4760e;
+    --red: #f85149;
+    --purple: #a371f7;
+    --chart-bg: #1c2333;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .sidebar h1 {
+    font-size: 16px;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .sidebar .version {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 20px;
+  }
+  .sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+  .sidebar nav a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text2);
+    transition: background .15s, color .15s;
+  }
+  .sidebar nav a:hover {
+    background: var(--bg3);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .sidebar nav a.section {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 12px 10px 4px;
+    cursor: default;
+  }
+  .sidebar nav a.section:hover { background: none; }
+  .sidebar .status-badge {
+    margin-top: 20px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+  }
+  .sidebar .status-badge .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .sidebar .status-badge .dot.green { background: var(--green); }
+
+  /* Main content */
+  .main {
+    margin-left: 240px;
+    padding: 32px 40px;
+    max-width: 1100px;
+    width: 100%;
+  }
+  .main > section { margin-bottom: 48px; }
+  .main h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .main h3 {
+    font-size: 15px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat .value {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .stat .label {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  /* Pipeline diagram */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 16px 0;
+  }
+  .pipe-node {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 13px;
+    text-align: center;
+    min-width: 90px;
+  }
+  .pipe-node .icon { font-size: 20px; margin-bottom: 4px; }
+  .pipe-node .sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .pipe-arrow { color: var(--text2); font-size: 18px; padding: 0 4px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .file-list { list-style: none; }
+  .file-list li { padding: 4px 0; font-size: 13px; }
+  .file-list li::before { content: '📄 '; margin-right: 4px; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-green { background: rgba(63,185,80,.15); color: var(--green); }
+  .badge-yellow { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .badge-red { background: rgba(248,81,73,.15); color: var(--red); }
+  .badge-purple { background: rgba(163,113,247,.15); color: var(--purple); }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 8px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .progress-bar .fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--green);
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 20px; }
+    .pipeline { flex-direction: column; }
+    .pipe-arrow { transform: rotate(90deg); }
+  }
+
+  /* Tag */
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 11px; background: var(--bg3); color: var(--text2); margin: 1px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <h1>⬡ ecom-demo</h1>
+  <div class="version">develop · v1.0</div>
+  <div class="status-badge">
+    <span class="dot green"></span>Project Active
+    <div style="margin-top:6px;font-size:11px;color:var(--text2)">Last commit: 73443e1</div>
+  </div>
+  <nav>
+    <a class="section">Overview</a>
+    <a href="#overview">Dashboard</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#progress">Progress</a>
+    <a class="section">Product</a>
+    <a href="#models">dbt Models</a>
+    <a href="#filestructure">Files</a>
+    <a href="#issues">Known Issues</a>
+    <a class="section">Business</a>
+    <a href="#business-plan">Business Plan</a>
+    <a href="#services">Services &amp; Pricing</a>
+    <a href="#marketing">Marketing</a>
+    <a class="section">Development</a>
+    <a href="#links">Quick Links</a>
+  </nav>
+</aside>
+
+<div class="main">
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <h2>📊 Project Overview</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="value" style="color:var(--green)">6</div><div class="label">dbt Models</div></div>
+    <div class="stat"><div class="value" style="color:var(--accent)">3</div><div class="label">Staging</div></div>
+    <div class="stat"><div class="value" style="color:var(--purple)">3</div><div class="label">Marts</div></div>
+    <div class="stat"><div class="value" style="color:var(--yellow)">1</div><div class="label">Seed</div></div>
+    <div class="stat"><div class="value" style="color:var(--orange)">0</div><div class="label">Tests</div></div>
+  </div>
+  <div class="card">
+    <p>End-to-end analytics pipeline: <strong>Shopify → Airbyte → BigQuery → dbt → Looker Studio</strong></p>
+    <p style="color:var(--text2);margin-top:8px;">Target market: €1M–€10M Shopify stores | Hybrid pricing: setup fee + monthly recurring</p>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <h2>🔧 Pipeline Architecture</h2>
+  <div class="card">
+    <div class="pipeline">
+      <div class="pipe-node"><div class="icon">🛒</div>Shopify<div class="sub">Admin API</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-node"><div class="icon">☁️</div>Airbyte Cloud<div class="sub">daily sync</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-node"><div class="icon">🗄️</div>BigQuery<div class="sub">ecom_raw</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-node"><div class="icon">🔄</div>dbt Cloud<div class="sub">06:00 UTC</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-node"><div class="icon">📈</div>Looker Studio<div class="sub">3 dashboards</div></div>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>GCP Resources</h3>
+      <table>
+        <tr><td>Project</td><td><code>ecom-demo-488710</code></td></tr>
+        <tr><td>Raw dataset</td><td><code>ecom_raw</code></td></tr>
+        <tr><td>Marts dataset</td><td><code>ecom_marts</code></td></tr>
+        <tr><td>Region</td><td>EU</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Stack Cost</h3>
+      <table>
+        <tr><td>Shopify API</td><td>Free</td></tr>
+        <tr><td>Airbyte Cloud</td><td>Free tier</td></tr>
+        <tr><td>BigQuery</td><td>Free tier</td></tr>
+        <tr><td>dbt Cloud</td><td>Free Developer</td></tr>
+        <tr><td>Looker Studio</td><td>Free</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>~€0/mo demo</strong></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRESS -->
+<section id="progress">
+  <h2>✅ Project Progress</h2>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;font-size:13px;">
+      <span>Overall completion</span>
+      <span style="color:var(--green)">65%</span>
+    </div>
+    <div class="progress-bar"><div class="fill" style="width:65%"></div></div>
+  </div>
+  <table>
+    <tr><th>Area</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>dbt Models</td><td><span class="badge badge-green">Done</span></td><td>3 staging + 3 marts complete</td></tr>
+    <tr><td>Sources Config</td><td><span class="badge badge-green">Done</span></td><td>Points to ecom-demo-488710</td></tr>
+    <tr><td>Seed Data</td><td><span class="badge badge-green">Done</span></td><td>product_margins.csv</td></tr>
+    <tr><td>Pipeline Docs</td><td><span class="badge badge-green">Done</span></td><td>ARCHITECTURE.md created</td></tr>
+    <tr><td>Build Checklist</td><td><span class="badge badge-green">Done</span></td><td>docs/product/</td></tr>
+    <tr><td>Business Plan</td><td><span class="badge badge-green">Done</span></td><td>docs/business/</td></tr>
+    <tr><td>Directory Cleanup</td><td><span class="badge badge-green">Done</span></td><td>Empty dbt dirs removed</td></tr>
+    <tr><td>Internal Cockpit</td><td><span class="badge badge-green">Done</span></td><td>you are here</td></tr>
+    <tr><td>dbt Tests</td><td><span class="badge badge-yellow">To Do</span></td><td>Not yet written</td></tr>
+    <tr><td>Channel Attribution</td><td><span class="badge badge-yellow">Needs Fix</span></td><td>Uses mod(order_id,5) simulation</td></tr>
+    <tr><td>Marketing Docs</td><td><span class="badge badge-yellow">To Do</span></td><td>Not yet written</td></tr>
+    <tr><td>Landing Page</td><td><span class="badge badge-yellow">To Do</span></td><td>Not yet built</td></tr>
+    <tr><td>Google Ads Integration</td><td><span class="badge badge-red">Planned</span></td><td>For real ROAS calculation</td></tr>
+    <tr><td>dbt Snapshots</td><td><span class="badge badge-red">Planned</span></td><td>SCD tracking</td></tr>
+    <tr><td>dbt Macros</td><td><span class="badge badge-red">Planned</span></td><td>Reusable SQL</td></tr>
+  </table>
+</section>
+
+<!-- dBT MODELS -->
+<section id="models">
+  <h2>📦 dbt Models</h2>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Staging (views)</h3>
+      <ul class="file-list">
+        <li><a href="../../models/staging/stg_orders.sql"><code>stg_orders</code></a> — cleaned orders, JSON extraction</li>
+        <li><a href="../../models/staging/stg_order_lines.sql"><code>stg_order_lines</code></a> — unnested line items</li>
+        <li><a href="../../models/staging/stg_customers.sql"><code>stg_customers</code></a> — cleaned customers, tags</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Marts (tables)</h3>
+      <ul class="file-list">
+        <li><a href="../../models/marts/mart_revenue_monthly.sql"><code>mart_revenue_monthly</code></a> — revenue KPIs</li>
+        <li><a href="../../models/marts/mart_marketing_performance.sql"><code>mart_marketing_performance</code></a> — channel attribution</li>
+        <li><a href="../../models/marts/mart_customer_ltv.sql"><code>mart_customer_ltv</code></a> — LTV segments</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FILE STRUCTURE -->
+<section id="filestructure">
+  <h2>📁 Project Map</h2>
+  <div class="card">
+    <table>
+      <tr><th>Path</th><th>Description</th></tr>
+      <tr><td><a href="../../models/sources.yml"><code>models/sources.yml</code></a></td><td>BigQuery source definitions</td></tr>
+      <tr><td><a href="../../dbt_project.yml"><code>dbt_project.yml</code></a></td><td>dbt project configuration</td></tr>
+      <tr><td><a href="../../seeds/product_margins.csv"><code>seeds/product_margins.csv</code></a></td><td>COGS data per product</td></tr>
+      <tr><td><a href="../product/01-architecture.md"><code>docs/product/01-architecture.md</code></a></td><td>Pipeline architecture</td></tr>
+      <tr><td><a href="../product/02-build-checklist.md"><code>docs/product/02-build-checklist.md</code></a></td><td>Step-by-step build guide</td></tr>
+      <tr><td><a href="../business/01-business-plan.md"><code>docs/business/01-business-plan.md</code></a></td><td>Business plan</td></tr>
+      <tr><td><a href="../../README.md"><code>README.md</code></a></td><td>Project README</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- KNOWN ISSUES -->
+<section id="issues">
+  <h2>⚠️ Known Issues & Technical Debt</h2>
+  <div class="card">
+    <table>
+      <tr><th>Issue</th><th>Severity</th><th>Fix</th></tr>
+      <tr>
+        <td>Channel attribution uses <code>mod(order_id, 5)</code> instead of real <code>source_name</code></td>
+        <td><span class="badge badge-yellow">Medium</span></td>
+        <td>Remove simulation, use actual Shopify source_name</td>
+      </tr>
+      <tr>
+        <td>No dbt tests written</td>
+        <td><span class="badge badge-yellow">Medium</span></td>
+        <td>Add generic + singular tests</td>
+      </tr>
+      <tr>
+        <td>No Google Ads spend data</td>
+        <td><span class="badge badge-yellow">Medium</span></td>
+        <td>Add Google Ads Airbyte connector</td>
+      </tr>
+      <tr>
+        <td>No real COGS pipeline (manual CSV)</td>
+        <td><span class="badge badge-yellow">Low</span></td>
+        <td>Connect Lexoffice or accounting API</td>
+      </tr>
+      <tr>
+        <td>Only single branch (develop) — no production deploy</td>
+        <td><span class="badge badge-yellow">Low</span></td>
+        <td>Set up main/develop/release workflow</td>
+      </tr>
+      <tr>
+        <td>Seed CSV in wrong path (dbt/seeds/ not seeds/)</td>
+        <td><span class="badge badge-green">Fixed</span></td>
+        <td>Moved to seeds/</td>
+      </tr>
+      <tr>
+        <td>Empty dbt/models/ directory</td>
+        <td><span class="badge badge-green">Fixed</span></td>
+        <td>Removed</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- BUSINESS PLAN -->
+<section id="business-plan">
+  <h2>📋 Business Plan Summary</h2>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <h3>Target</h3>
+        <p style="font-size:13px;color:var(--text2);">€1M–€10M revenue Shopify stores</p>
+      </div>
+      <div>
+        <h3>Revenue Goal</h3>
+        <p style="font-size:13px;color:var(--text2);">€100K net → scalable productized service</p>
+      </div>
+      <div>
+        <h3>Model</h3>
+        <p style="font-size:13px;color:var(--text2);">Hybrid: setup fee + monthly recurring</p>
+      </div>
+      <div>
+        <h3>Acquisition</h3>
+        <p style="font-size:13px;color:var(--text2);">LinkedIn authority + agency partnerships</p>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <a href="../business/01-business-plan.md" style="font-size:13px;">→ Read full business plan</a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <h2>💼 Service Packages</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+    <div class="card" style="border-color:var(--accent);">
+      <h3 style="color:var(--accent);">Starter</h3>
+      <div style="font-size:24px;font-weight:700;margin:8px 0;">€3K</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">+ €500/mo</div>
+      <table style="font-size:12px;">
+        <tr><td>Setup</td><td>3 weeks</td></tr>
+        <tr><td>Dashboards</td><td>Revenue, LTV, Marketing</td></tr>
+        <tr><td>Margin</td><td>Manual CSV</td></tr>
+        <tr><td>Reports</td><td>Monthly PDF</td></tr>
+        <tr><td>Support</td><td>Email</td></tr>
+      </table>
+      <div style="margin-top:12px;font-size:11px;color:var(--text2);">For €1M–€3M stores</div>
+    </div>
+    <div class="card" style="border-color:var(--purple);">
+      <h3 style="color:var(--purple);">Growth</h3>
+      <div style="font-size:24px;font-weight:700;margin:8px 0;">€5K</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">+ €1K/mo</div>
+      <table style="font-size:12px;">
+        <tr><td>Setup</td><td>4 weeks</td></tr>
+        <tr><td>Dashboards</td><td>Everything in Starter +</td></tr>
+        <tr><td>Integrations</td><td>+ Google Ads + COGS</td></tr>
+        <tr><td>Margin</td><td>Automated (Lexoffice)</td></tr>
+        <tr><td>Reports</td><td>Bi-weekly + call</td></tr>
+        <tr><td>Support</td><td>Slack</td></tr>
+      </table>
+      <div style="margin-top:12px;font-size:11px;color:var(--text2);">For €3M–€5M stores</div>
+    </div>
+    <div class="card" style="border-color:var(--orange);">
+      <h3 style="color:var(--orange);">Enterprise</h3>
+      <div style="font-size:24px;font-weight:700;margin:8px 0;">€8K</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">+ €2K/mo</div>
+      <table style="font-size:12px;">
+        <tr><td>Setup</td><td>6 weeks</td></tr>
+        <tr><td>Dashboards</td><td>Everything in Growth +</td></tr>
+        <tr><td>Integrations</td><td>Custom integrations</td></tr>
+        <tr><td>Reports</td><td>Weekly + priority Slack</td></tr>
+        <tr><td>SLA</td><td>4 hour response</td></tr>
+      </table>
+      <div style="margin-top:12px;font-size:11px;color:var(--text2);">For €5M–€10M stores</div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETING -->
+<section id="marketing">
+  <h2>📢 Marketing Channels</h2>
+  <div class="card">
+    <table>
+      <tr><th>Channel</th><th>Status</th><th>Notes</th></tr>
+      <tr><td>LinkedIn Authority</td><td><span class="badge badge-yellow">Planned</span></td><td>Content: "How Shopify stores lose money without BI"</td></tr>
+      <tr><td>Agency Partnerships</td><td><span class="badge badge-yellow">Planned</span></td><td>Shopify agencies, marketing agencies</td></tr>
+      <tr><td>US Market</td><td><span class="badge badge-red">Research</span></td><td>Higher budgets, fewer restrictions</td></tr>
+      <tr><td>Cold Outreach</td><td><span class="badge badge-red">Paused</span></td><td>Previously tested, low conversion</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- LINKS -->
+<section id="links">
+  <h2>🔗 Quick Links</h2>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Repository</h3>
+      <ul class="file-list">
+        <li><a href="https://github.com/Javid912/ecom-demo" target="_blank">GitHub Repo</a></li>
+        <li><a href="https://github.com/Javid912/ecom-demo/tree/develop" target="_blank">Develop Branch</a></li>
+        <li><a href="../../">Root (local)</a></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Cloud Services</h3>
+      <ul class="file-list">
+        <li><span>GCP Console</span> <span class="tag">ecom-demo-488710</span></li>
+        <li><span>dbt Cloud</span> <span class="tag">shopify_demo</span></li>
+        <li><span>Airbyte Cloud</span> <span class="tag">Shopify → BigQuery</span></li>
+        <li><span>Looker Studio</span> <span class="tag">3 dashboards</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Key Docs</h3>
+      <ul class="file-list">
+        <li><a href="../business/01-business-plan.md">Business Plan</a></li>
+        <li><a href="../product/01-architecture.md">Architecture</a></li>
+        <li><a href="../product/02-build-checklist.md">Build Checklist</a></li>
+        <li><a href="../../README.md">README</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <h3>Next Actions</h3>
+    <table>
+      <tr><td>1</td><td>Review and approve business docs</td><td><span class="badge badge-yellow">You</span></td></tr>
+      <tr><td>2</td><td>Add dbt generic tests (unique, not null)</td><td><span class="badge badge-yellow">Build</span></td></tr>
+      <tr><td>3</td><td>Build external landing page</td><td><span class="badge badge-yellow">Build</span></td></tr>
+      <tr><td>4</td><td>Fix channel attribution (remove simulation)</td><td><span class="badge badge-red">Planned</span></td></tr>
+    </table>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
